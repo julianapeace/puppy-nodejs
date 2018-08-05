@@ -1,4 +1,5 @@
 var promise = require('bluebird');
+var jwt = require('jsonwebtoken');
 var options = {
   // Initialization Options
   promiseLib: promise
@@ -7,6 +8,42 @@ var options = {
 var pgp = require('pg-promise')(options);
 var DATABASE_URL = "postgres://127.0.0.1:5432/puppies";
 var db = pgp(DATABASE_URL);
+
+
+function token(req, res, next) {
+  var username = req.params.username
+  var token = jwt.sign({ data: 'some_payload', username: username }, process.env.ENCRYPTION_KEY, {
+    expiresIn: 86400 //expires in 24 hours
+  });
+  res.status(200).json(token);
+  // res.status(200).send({ auth: true, token: token });
+}
+
+
+function parseToken(req, res, next) {
+  var token = req.headers['authorization'];
+  if (!token) return res.status(401).send({ auth: false, message: 'No token provided.' });
+
+  jwt.verify(token, process.env.ENCRYPTION_KEY, function(err, decoded) {
+    if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
+
+    res.status(200).send(decoded);
+  });
+}
+
+function getMyRides(req, res, next) {
+  var token = req.headers['authorization'];
+  if (!token) return res.status(401).send({ auth: false, message: 'No token provided.' });
+
+  jwt.verify(token, process.env.ENCRYPTION_KEY, function(err, decoded) {
+    if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
+    var user = decoded.username
+    //search DB for user
+    //If valid user, run SQL query.
+    // Run SQL query for rides matching user.
+  });
+}
+
 
 function getAllPuppies(req, res, next) {
   db.any('select * from pups')
@@ -113,6 +150,9 @@ module.exports = {
   createPuppy: createPuppy,
   updatePuppy: updatePuppy,
   removePuppy: removePuppy,
+  token: token,
+  parseToken: parseToken,
+  getMyRides: getMyRides
 };
 
 /*

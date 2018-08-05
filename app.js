@@ -23,6 +23,9 @@ app.get('/api/puppies/:id', db.getSinglePuppy);
 app.post('/api/puppies', db.createPuppy);
 app.put('/api/puppies/:id', db.updatePuppy);
 app.delete('/api/puppies/:id', db.removePuppy);
+app.get('/api/token/:username', db.token);
+app.get('/api/parsetoken', db.parseToken);
+app.get('/api/myrides', db.getMyRides);
 
 app.get('/post/:slug', function (req, res) {
   /* TEST WITH http://localhost:8000/post/julie
