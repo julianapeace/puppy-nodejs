@@ -12,7 +12,7 @@ var db = pgp(DATABASE_URL);
 
 function token(req, res, next) {
   var username = req.params.username
-  var token = jwt.sign({ data: 'some_payload', username: username }, process.env.ENCRYPTION_KEY, {
+  var token = jwt.sign({ data: 'some_payload', googleAccount: googleAccount }, process.env.ENCRYPTION_KEY, {
     expiresIn: 86400 //expires in 24 hours
   });
   res.status(200).json(token);
@@ -37,11 +37,61 @@ function getMyRides(req, res, next) {
 
   jwt.verify(token, process.env.ENCRYPTION_KEY, function(err, decoded) {
     if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
-    var user = decoded.username
-    //search DB for user
-    //If valid user, run SQL query.
-    // Run SQL query for rides matching user.
+    var googleAccount = decoded.googleAccount
+    db.any('SELECT * FROM volunteer WHERE GoogleAccount = "${googleAccount}" LIMIT 1')
+    .then(data =>{
+      console.log(JSON.stringify(data, null, 2));
+      var id = data.id //volunteer ID
+      db.any('SELECT VolunteerId FROM volunteer_drive JOIN volunteer ON VolunteerID = Id')
+        .then(data =>{
+          console.log(JSON.stringify(data, null, 2));
+          res.send(data)
+        })
+        .catch(function (err) {
+          return next(err);
+        )
+    })
+    .catch(function (err) {
+      return next(err);
+    });
+
+    /*
+    host="casnapptest.dmwilson.info",
+    user="developers",
+    passwd="developers",
+    db="casn-app",
+    */
   });
+}
+
+function toDateTime(value) {
+  var value = value.toString()
+  var month = value.slice(0,2)
+  var day = value.slice(2,4)
+  var year = value.slice(4,8)
+  var datetime = []
+  Array.prototype.push.apply(datetime,[year, month, day])
+  return(datetime.join('-'))
+}
+
+function getAllAppointmentsRange(req, res, next) {
+  var token = req.headers['authorization'];
+  if (!token) return res.status(401).send({ auth: false, message: 'No token provided.' });
+
+  jwt.verify(token, process.env.ENCRYPTION_KEY, function(err, decoded) {
+    var startDate = toDateTime(req.params.startDate); //07082018
+    var endDate = toDateTime(req.params.endDate);
+    //TODO: Convert Dates to epochtime.
+    //NOTE: Mysql Datetime is 'YYYY-MM-DD HH:MM:SS' in central time
+      db.any('SELECT * FROM appointment WHERE (AppointmentDate BETWEEN ${startDate} AND ${endDate})')
+      .then(data =>{
+        console.log(JSON.stringify(data, null, 2));
+        res.send(data)
+      })
+      .catch(function (err) {
+        return next(err);
+      });
+  }
 }
 
 
@@ -152,7 +202,8 @@ module.exports = {
   removePuppy: removePuppy,
   token: token,
   parseToken: parseToken,
-  getMyRides: getMyRides
+  getMyRides: getMyRides,
+  getAllAppointmentsRange: getAllAppointmentsRange
 };
 
 /*
