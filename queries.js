@@ -71,8 +71,9 @@ function toDateTime(value) {
   var year = value.slice(4,8)
   var datetime = []
   Array.prototype.push.apply(datetime,[year, month, day])
-  return(datetime.join('-'))
+  return(datetime.join('-')) //07-07-2018
 }
+
 
 function getAllAppointmentsRange(req, res, next) {
   var token = req.headers['authorization'];

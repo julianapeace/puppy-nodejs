@@ -23,16 +23,11 @@ app.get('/api/puppies/:id', db.getSinglePuppy);
 app.post('/api/puppies', db.createPuppy);
 app.put('/api/puppies/:id', db.updatePuppy);
 app.delete('/api/puppies/:id', db.removePuppy);
+
 app.get('/api/token/:username', db.token);
 app.get('/api/parsetoken', db.parseToken);
 app.get('/api/myrides', db.getMyRides);
 app.get('/api/allappointments/:startRange/:endRange', db.getAllAppointmentsRange);
-app.get('/post/:slug', function (req, res) {
-  /* TEST WITH http://localhost:8000/post/julie
-  */
-  var slug = req.params.slug;
-  res.send('Post About: ' + slug);
-});
 
 app.get('/hello', function (req, res) {
   /* TEST WITH http://localhost:8000/hello?name=julie
