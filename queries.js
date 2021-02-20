@@ -5,7 +5,7 @@ var options = {
 };
 
 var pgp = require('pg-promise')(options);
-var DATABASE_URL = "postgres://127.0.0.1:5432/puppies";
+var DATABASE_URL = "postgres://127.0.0.1:5432/puppy_node";
 var db = pgp(DATABASE_URL);
 
 function getAllPuppies(req, res, next) {

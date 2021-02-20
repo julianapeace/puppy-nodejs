@@ -1,8 +1,8 @@
-DROP DATABASE IF EXISTS hercules_node;
-CREATE DATABASE hercules_node;
+DROP DATABASE IF EXISTS puppy_node;
+CREATE DATABASE puppy_node;
 
-\c puppies;
 
+DROP TABLE IF EXISTS "pups";
 CREATE TABLE pups (
   ID SERIAL PRIMARY KEY,
   name VARCHAR,
